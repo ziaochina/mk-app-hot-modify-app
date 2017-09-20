@@ -91,12 +91,22 @@ class action {
         try {
             const json = utils.string.toJson(v)
             const appName = this.metaAction.gf('data.selectApp.name')
-
-            this.metaAction.sf('data.currentJson', v)
-
             const type = this.metaAction.gf('data.selectType')
-            if (type == 'meta')
+
+            if(type == 'meta'){
+                this.metaAction.sfs({
+                    'data.currentJson': v,
+                    'data.selectApp.meta': fromJS(json)
+                })
+            }
+            else{
+                this.metaAction.sf('data.currentJson', v)
+            }
+            
+            if (type == 'meta'){
+                
                 this.forceUpdateMeta(appName, json)
+            }
             else if (type == 'state')
                 this.forceUpdateState(appName, json)
         }
@@ -144,9 +154,12 @@ class action {
         const selectApp = this.metaAction.gf('data.selectApp')
         keys.forEach(k => {
             if (apps[k].name == selectApp.get('name')) {
-                const resetMeta = beautify.beautifyJS(JSON.stringify(apps[k].meta))
-                this.metaAction.sf('data.selectApp.meta', resetMeta)
-                this.forceUpdateComponent(selectApp.get('name'), apps[k].meta)
+                this.metaAction.sfs({
+                    'data.selectApp.meta': fromJS(apps[k].meta),
+                    'data.currentJson': beautify.beautifyJS(JSON.stringify(apps[k].meta))
+                })
+
+                this.forceUpdateMeta(selectApp.get('name'), apps[k].meta)
             }
         })
     }
